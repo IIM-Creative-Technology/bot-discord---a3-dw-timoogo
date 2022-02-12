@@ -14,7 +14,8 @@ const connexion = mySQL.createConnection({
 connexion.connect((err) => console.log(err ?  err : "db connected"))
 
 const COMMAND_PREFIX = '!';
-
+const SUPER_ADMINISTRATOR =process.env.SUPER_ADMINISTRATOR
+let xp_inc = 4
 clientLoader.createClient(['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'DIRECT_MESSAGES'])
   .then(async (client) => {
     commandLoader.load(client);
@@ -24,12 +25,12 @@ clientLoader.createClient(['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'DIRECT_
         member.roles.add(role)
           .then(()=>{
             console.log(`Role added: ${role} to ${member.displayName}`)
-            connexion.query(`SELECT user_id FROM xp_table WHERE user_id = "${member.id}"`,(err, res)=>{
+            connexion.query(`SELECT user_id FROM xp WHERE user_id = "${member.id}"`,(err, res)=>{
               if(res.length > 0){
                 console.log(`${member.displayName} already in db`)
                 return 
               } else {
-                connexion.query(`INSERT INTO xp_table (user_id, xp_count, xp_level) VALUES("${member.id}", 0, 0)`,(err, res)=>{
+                connexion.query(`INSERT INTO xp (user_id, xp_count, xp_level) VALUES("${member.id}", 0, 0)`,(err, res)=>{
                     console.log("Succusfully added")
                 })
               }
@@ -38,9 +39,9 @@ clientLoader.createClient(['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'DIRECT_
           });
     })
     client.on('guildMemberRemove', async (member) => {
-        connexion.query(`SELECT user_id FROM xp_table WHERE user_id = "${member.id}"`,(err, res)=>{
+        connexion.query(`SELECT user_id FROM xp WHERE user_id = "${member.id}"`,(err, res)=>{
             if(res.length > 0){
-                connexion.query(`DELETE FROM xp_table  WHERE user_id ="${member.id}" `,(err, res)=>{
+                connexion.query(`DELETE FROM xp  WHERE user_id ="${member.id}" `,(err, res)=>{
                 console.log(`removed` )
                 })  
             return 
@@ -51,11 +52,30 @@ clientLoader.createClient(['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'DIRECT_
     })
 
     client.on('messageCreate', async (message) => {
+      if(message.content.startsWith(COMMAND_PREFIX)){
+        const xp_inc = 0
+        
+        return
+      }
+      if(message.author.id != SUPER_ADMINISTRATOR){
+ 
+        connexion.query(`SELECT user_id, xp_count FROM xp WHERE user_id = "${message.author.id}"`,(err, res)=>{
+          // console.log(message.author.id)
+          //console.log(`${message.author.username} said`, message.content)
+           const new_xp = res[0].xp_count + xp_inc
+          // console.log(new_xp)
+           connexion.query(`UPDATE xp SET xp_count = ${new_xp} WHERE user_id = "${message.author.id}"`, (err, res)=>{
+            // console.log(err ?  err : res)
+           })
+        })
+       
       
+
+     
 
       // Ne pas tenir compte des messages envoyés par les bots, ou qui ne commencent pas par le préfix
       if (message.author.bot || !message.content.startsWith(COMMAND_PREFIX)) return;
-      
+ 
       // On découpe le message pour récupérer tous les mots
       const words = message.content.split(' ');
 
@@ -70,5 +90,7 @@ clientLoader.createClient(['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'DIRECT_
         await message.delete();
         await message.channel.send(`The ${commandName} does not exist.`);
       }
+      }
+      
     })
   });
