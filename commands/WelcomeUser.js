@@ -10,7 +10,7 @@ module.exports.run = async (client, message,  arguments) => {
   await message.delete().then(
     embed
     .setTitle(`Welcome to ${message.author.username} ` )
-    .setDescription(`Bonjour`));
+    .setDescription("Seems working ! Nice ! try `!help` now "));
 
   message.channel.send({
     embeds: [ embed ]
@@ -19,4 +19,4 @@ module.exports.run = async (client, message,  arguments) => {
 
 };
 
-module.exports.name = 'ep';
+module.exports.name = 'wlc';

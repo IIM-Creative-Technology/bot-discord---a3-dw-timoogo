@@ -7,7 +7,7 @@ module.exports = {
    * @returns {Promise<Discord.Client>}
    */
   createClient: async (intents = []) => {
-    if (intents && intents.length > 0 && !intents.includes('GUILD_MESSAGES')) {
+    if (intents && intents.length > 0 && !intents.includes(['GUILD_MESSAGES', ])) {
       intents = [...intents, 'GUILD_MESSAGES'];
     }
 

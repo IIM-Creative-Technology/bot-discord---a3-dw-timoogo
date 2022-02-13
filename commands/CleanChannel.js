@@ -7,7 +7,7 @@ const { sleep } = require('../src/utilities');
  * @param {Array<String>} arguments
  */
 module.exports.run = async (client, message, arguments) => {
-    //console.log(message.channelId)
+    // console.log(message.channelId)
     if(message.member.roles.cache.some(r => r.name === "hollow")) {
       sleep(4000).then(
         message.reply("you can't do this action without permission, please contact a boss member"),
